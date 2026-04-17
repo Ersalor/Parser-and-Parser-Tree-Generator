@@ -1,0 +1,9 @@
+1 - kullanıcıdan gerekli dosya isimlerini al (txt)
+2 - grammar'ı dict'e çevir 
+3 - stringleri parçalara ayır (cümle ise kelimelere , harf ise harflere)
+4 - backtraking ile dict üzerinde dolaşarak cümlenin grammar'ını kontrol edeceğiz
+    -HATA VARSA: İlk nerede hata aldık
+                 Beklenen değer neydi
+                 Cümle neden hatalı
+    -HATA YOKSA:Parse tree yap
+                JSON formatında yaz

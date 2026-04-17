@@ -1,0 +1,140 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper,left=25mm,right=25mm,top=25mm,bottom=25mm}
+\usepackage{amsmath} % Matematik formülleri için
+\usepackage{enumitem} % Madde listeleme için
+\usepackage{hyperref} % İçindekiler kısmı için tıklanabilir bağlantılar
+\usepackage{sectsty} % Control sectional headers.
+\sectionfont{\centering} % center section headers
+
+% Özel komutları tanımlayın
+\newcommand{\projecttitle}{Project Title} % Proje başlığı
+\newcommand{\studentname}{Student Name Surname} % Öğrenci adı
+\newcommand{\studentnumber}{123456789} % Öğrenci numarası
+
+\title{Project Title}
+\author{Student Name Surname \\ Student Number}
+\date{\today}
+
+\begin{document}
+	
+	% First Page
+	\begin{titlepage}
+		\centering
+		\includegraphics[width=0.50\textwidth]{KTU_Logo_2A.png} % Üniversite logosu
+		\vspace{1cm}
+		
+		\textbf{\large KARADENIZ TECHNICAL UNIVERSITY}\\ \vspace{1mm}
+		\textbf{\large FACULTY OF ENGINEERING}\\ \vspace{1mm}
+		\textbf{\large  DEPARTMENT OF SOFTWARE ENGINEERING}\\
+
+		\vspace{1cm}
+		
+		{\large \textbf{\MakeUppercase{\projecttitle}}} \\
+		\vspace{1.5cm}
+		
+		{\large \textbf{Student Name:} \studentname} \\
+		{\large \textbf{Student Number:} \studentnumber} \\
+		\vspace{1cm}
+		
+		{\large \textbf{Date:} \today} \\
+		\vfill
+	\end{titlepage}
+	
+	% Table of Contents
+	\tableofcontents
+	\newpage
+	
+	% Abstract
+	\section*{Abstract}
+	This is the abstract section. Here, you should provide a brief summary of your project, including the main objectives, methods, results, and conclusions. The abstract should be concise and no longer than 200 words.
+	
+	\subsection*{Keywords}
+	Keyword1, Keyword2, Keyword3, Keyword4
+	
+	% Main Content
+	\section{Introduction}
+	This section introduces the topic of the project, provides background information, and states the problem or research question.
+	
+	\section{Aims and Objectives}
+	Here, you should clearly state the aims and objectives of your project. What do you hope to achieve with this project?
+	
+	\section{Methodology}
+	This section describes the methods and procedures used in your project. Explain how you conducted your research or developed your software.
+	
+	\subsection{Adding a Table}
+	Below is an example of a table:
+	
+	\begin{table}[h!]
+		\centering
+		\begin{tabular}{|c|c|c|}
+			\hline
+			\textbf{Column 1} & \textbf{Column 2} & \textbf{Column 3} \\
+			\hline
+			Data 1 & Data 2 & Data 3 \\
+			\hline
+			Data 4 & Data 5 & Data 6 \\
+			\hline
+		\end{tabular}
+		\caption{Example Table}
+		\label{tab:example}
+	\end{table}
+	
+	\subsection{Adding an Image}
+	Below is an example of an image:
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=1.0\textwidth]{KTU_Logo_2F.png} % Resmi projenize yükleyin
+		\caption{Example Image}
+		\label{fig:example}
+	\end{figure}
+	
+	\subsection{Adding a Mathematical Formula}
+	Below is an example of a mathematical formula:
+	
+	The Pythagorean theorem is stated as:
+	\[
+	a^2 + b^2 = c^2
+	\]
+	where \(a\) and \(b\) are the lengths of the legs of a right triangle, and \(c\) is the length of the hypotenuse.
+	
+	\subsection{Adding a List}
+	Below is an example of a bullet-point list:
+	
+	\begin{itemize}
+		\item First item
+		\item Second item
+		\item Third item
+	\end{itemize}
+	
+	And here is an example of a numbered list:
+	
+	\begin{enumerate}
+		\item First item
+		\item Second item
+		\item Third item
+	\end{enumerate}
+	
+	\section{Findings}
+	Present the results of your project. Use tables, figures, and graphs if necessary to illustrate your findings.
+	
+	\section{Conclusion and Discussion}
+	Summarize the main findings of your project and discuss their implications. Compare your results with previous studies or expected outcomes.
+	
+	\section{Recommendations}
+	Provide recommendations based on your findings. What should be done next? Are there any areas for further research or improvement?
+	
+	% References
+	\section*{References}
+	List all the references you used in your project. Use a consistent citation style (e.g., APA, IEEE).
+	
+	% Appendices
+	\section*{Appendices}
+	If you have any additional material, such as code, data, or detailed calculations, include them in the appendices.
+	
+\end{document}
