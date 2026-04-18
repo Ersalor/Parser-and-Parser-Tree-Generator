@@ -20,3 +20,24 @@ for line in file_row:
 
 for key in dict:
     print(key, ":", dict[key])
+
+def gotovalue(grammer_dict,key):
+      
+        if key in grammer_dict:
+            value = grammer_dict[key]
+            if type(value) != list:
+                value_list = value.split(" ")
+            elif type(value) == list:
+                value_list = value
+            for i in value_list:
+                if len(i.split(" ")) > 1:
+                    for j in i.split(" "):
+                        gotovalue(grammer_dict,j)
+                if i in grammer_dict:   
+                    gotovalue(grammer_dict,i)
+                else:
+                     print(grammer_dict[i]) #burda biryerde değişiklik yapıcam
+                     break                  #en son terminalleden birini seçip iç içe döngüyü bırakması lazım onu sağlayacağım
+        else:
+           pass
+
