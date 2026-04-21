@@ -1,34 +1,28 @@
-#file_name = input("Enter the file name: ")
-file = open("grammar1.txt", "r",encoding="utf-8")
+#Kullanıcaıdan grammer dosyası alınır
+file_name = input("Enter the grammar file name: ").strip()
 
-file_row = []
-dict = {}
+#Dosya açılır ve okunur
+with open(file_name, 'r', encoding='utf-8') as file:
+    lines=file.readlines()
 
-for line in file:
-    #print(line.strip())
-    file_row.append(line.strip())
+#Grammer dosyasından dictionary oluşturulur
+grammar = {}
+for line in lines:
+    line = line.strip()
+    if not line:
+        continue   
+    left, right = line.split('::=')
+    left = left.strip()
+    right = right.strip()
+    right_parts = [part.strip() for part in right.split('|')]
+    for part in right_parts:
+        right_parts[right_parts.index(part)] = part.split(" ")
+    grammar[left] = right_parts
 
-print()
+#Grammer dosyasından üretilen dictionary yazdırılır
+print("Grammar Dictionary: \n")
+for key, value in grammar.items():
+    print(f"{key} ::= {value}")
 
-for line in file_row:
-        dict[line.split("::=")[0].strip()] = line.split("::=")[1].strip().split(" | ")
-
-print(dict)
-
-#print(list(dict.keys())[0])
-
-def gotovalue(grammer_dict,key):
-      
-      if key in grammer_dict:
-            value = grammer_dict[key]
-            if type(value) != list:
-                value_list = value.split(" ")
-            elif type(value) == list:
-                value_list = value
-            for i in value_list:
-                if len(i.split(" ")) > 1:
-                    for j in i.split(" "):
-                         if j in grammer_dict:
-                              gotovalue(grammer_dict,j)
-                    if i in grammer_dict:   
-                        gotovalue(grammer_dict,i)
+#Her bir seçeneğin birer liste olarak dictionary'e eklenmesi gerekiyordu.
+#Detaylarını anlatıcam...
