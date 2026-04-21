@@ -1,28 +1,23 @@
-#Kullanıcaıdan grammer dosyası alınır
-file_name = input("Enter the grammar file name: ").strip()
+import functions
+#Kullanıcıdan grammer dosyası alınır
+grammar_file = input("Enter the grammar file name: ").strip()
 
 #Dosya açılır ve okunur
-with open(file_name, 'r', encoding='utf-8') as file:
-    lines=file.readlines()
+grammer_dict=functions.grammar_to_dict(grammar_file)
 
-#Grammer dosyasından dictionary oluşturulur
-grammar = {}
-for line in lines:
-    line = line.strip()
-    if not line:
-        continue   
-    left, right = line.split('::=')
-    left = left.strip()
-    right = right.strip()
-    right_parts = [part.strip() for part in right.split('|')]
-    for part in right_parts:
-        right_parts[right_parts.index(part)] = part.split(" ")
-    grammar[left] = right_parts
+#Kelime bazlı mı yoksa karakter bazlı mı olduğunu kontrol edilir
+#print(functions.is_word_based(grammer_dict))
 
-#Grammer dosyasından üretilen dictionary yazdırılır
-print("Grammar Dictionary: \n")
-for key, value in grammar.items():
-    print(f"{key} ::= {value}")
 
-#Her bir seçeneğin birer liste olarak dictionary'e eklenmesi gerekiyordu.
-#Detaylarını anlatıcam...
+#Stringler tokenize edilir
+"""sentence_file = input("Enter the sentence file name: ").strip()
+
+with open(sentence_file, 'r', encoding='utf-8') as file:
+    sentence_row = []
+    for line in file:
+        line = line.strip()
+        if line:
+            sentence_row.append(line)
+
+for sentence in sentence_row:
+    print(f"Sentence: {sentence}")"""

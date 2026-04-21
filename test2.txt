@@ -1,0 +1,5 @@
+<query> ::= <action> <target>
+<action> ::= select | delete | update
+<target> ::= <modifier> <object> | <object>
+<modifier> ::= all | new | old
+<object> ::= users | files | records
