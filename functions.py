@@ -46,3 +46,19 @@ def is_word_based(grammar_dict):
             return True
     return False
 
+def get_sentences(sentence_file):
+    with open(sentence_file, 'r', encoding='utf-8') as file:
+        sentences = [sentence.strip() for sentence in file.readlines()]
+    return sentences
+
+def tokenizate(*,sentences, is_word_based):
+    tokenizated_sentences = []
+    for sentence in sentences:
+        if is_word_based:
+            tokenizated_sentences.append(sentence.split())
+        else:
+            tokenizated_sentences.append(list(sentence))
+    return tokenizated_sentences
+        
+def control_sentence(sentence):#with backtracking
+    pass
