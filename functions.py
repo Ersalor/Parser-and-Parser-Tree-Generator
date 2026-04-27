@@ -9,12 +9,16 @@ def grammar_to_dict(grammar_file):
         line = line.strip()
         if not line:
             continue   
-        left, right = line.split('::=')
+        left, right = line.split(' ::= ')
         left = left.strip()
         right = right.strip()
         right_parts = [part.strip() for part in right.split('|')]
         for part in right_parts:
             right_parts[right_parts.index(part)] = part.split(" ")
+
+        if ["ε"] in right_parts:
+            right_parts.remove(["ε"])
+            right_parts.append(["ε"])
         grammar[left] = right_parts
 
     # #Grammer dosyasından üretilen dictionary yazdırılır
@@ -56,15 +60,18 @@ def tokenizate(*,sentences, is_word_based):
     for sentence in sentences:
         if is_word_based:
             tokenizated_sentences.append(sentence.split())
-            tokenizated_sentences[0].append(" ")
         else:
             tokenizated_sentences.append(list(sentence))
             tokenizated_sentences[0].append(" ")
+
+    if len(sentences) == 0:
+        tokenizated_sentences.append(" ")
    
     return tokenizated_sentences
 
-def parse(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_counter=None):
+def parse(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_counter=None,is_correct_sentence=None):
     
+
     if start_symbol not in grammar_dict:
         print(f"Error: {start_symbol} is not a non-terminal symbol in the grammar.")
         return False
@@ -76,28 +83,30 @@ def parse(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_co
         for value in grammar_dict[start_symbol]:
             for item in value:
                 if item == "ε":
-                    if item == value[-1] :
-                        pass_value = True
-                        break
-                    # else:
+                    if item == value[-1] and index[0] != len(tokenizated_sentence[0])-1 : #Epsilon son elemansa 
+                        pass_value = True                                                  # aa lardan bb lere geçerken pass etmemizi sağlıyor
+                        break                                                              # eğer cümlenin sonuncu kelimesi değilse çalıştırır
+                                                                                           # Son elemansa aşağıda zaten kontrol ediyoruz...
+                    # else:         #Ortadaki epsilonlar için dictionary ye çevirirken sona atma yapılabilir. 
                     #     continue
 
                 if item in grammar_dict:
                     parse_counter[0] += 1
-                    parse(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter)
+                    parse(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence)
                     parse_counter[0] -= 1
-                    if parse(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter) == 0 and parse_counter[0] != 1: #Eğer item "ε" ise ve value içindeki son item değilse diğer alternatifler denenir.
+                    if parse(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence) == 0 and parse_counter[0] != 1: #Eğer item "ε" ise ve value içindeki son item değilse diğer alternatifler denenir.
                         return 0
                         
                 else:
                     terminal_counter +=1
-
-                    # if index[0] == len(tokenizated_sentence[0])-1:
-                    #     if item == "ε":
-                    #         pass_value = True
-                    #         print("Correct sentence")
-                    #         break
-                    # son karakter problemi çözülecek
+                        
+                    if index[0] == len(tokenizated_sentence[0])-1:
+                        if item == "ε":
+                            pass_value = True
+                            # print("Correct sentence")
+                            is_correct_sentence[0] = True
+                            break
+                    #son karakter problemi çözülecek
 
                     if item == tokenizated_sentence[0][index[0]]:
                         index[0] +=1
@@ -131,8 +140,11 @@ def parse(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_co
                     return 0
                 
                 continue 
+            
             if exit_loops:
                 break
+
+    return is_correct_sentence[0]
         
           
 
@@ -142,6 +154,6 @@ def parse(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_co
 #           3) <verb-phrase> ::= <verb> | <verb> <noun-phrase> olduğunda ilk <verb> eşleştiğinde cümlede başka kelime yoksa ve 
 #             aranan terminalle eşleşiyorsa bitsin.Ama a man saw the dog da mesela saw dan sonra the dog var.Bu yüden sadece <verb>
 #             yetmez diye düşünüp <verb> <noun-phrase> denemeye başlamalı.
-# 4) Grammer de dolaşarak cümle sağlanabildiyse cümle eleman sayısı = index[0] olduysa cümle yazılabiliyor dicez.
-     #Çünkü her uygun deneme yapıldığında index[0] artıyor ve cümle eleman sayısına eşit olduğunda(hatasız arama yaparak)
-     #cümleyi başarıyla oluşturabilmişiz demektir.
+#           4) Grammer de dolaşarak cümle sağlanabildiyse cümle eleman sayısı = index[0] olduysa cümle yazılabiliyor dicez.
+#              Çünkü her uygun deneme yapıldığında index[0] artıyor ve cümle eleman sayısına eşit olduğunda(hatasız arama yaparak)
+#              cümleyi başarıyla oluşturabilmişiz demektir.
