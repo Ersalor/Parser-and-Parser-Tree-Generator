@@ -1,28 +1,26 @@
-#Kullanıcaıdan grammer dosyası alınır
-file_name = input("Enter the grammar file name: ").strip()
+import functions
+#Kullanıcıdan grammer dosyası alınır
+grammar_file = "grammar1.txt" #input("Enter the grammar file name: ").strip()
 
-#Dosya açılır ve okunur
-with open(file_name, 'r', encoding='utf-8') as file:
-    lines=file.readlines()
+#Dosya açılır,okunur ve dictionary oluşturulur
+grammer_dict=functions.grammar_to_dict(grammar_file)
 
-#Grammer dosyasından dictionary oluşturulur
-grammar = {}
-for line in lines:
-    line = line.strip()
-    if not line:
-        continue   
-    left, right = line.split('::=')
-    left = left.strip()
-    right = right.strip()
-    right_parts = [part.strip() for part in right.split('|')]
-    for part in right_parts:
-        right_parts[right_parts.index(part)] = part.split(" ")
-    grammar[left] = right_parts
+#Kelime bazlı mı yoksa karakter bazlı mı olduğu kontrol edilir
+is_word_based = functions.is_word_based(grammer_dict)
+start_symbol = list(grammer_dict.keys())[0]
 
-#Grammer dosyasından üretilen dictionary yazdırılır
-print("Grammar Dictionary: \n")
-for key, value in grammar.items():
-    print(f"{key} ::= {value}")
+#Kullanıcıdan cümle dosyası alınır
+sentence_file = "sentence.txt" #input("Enter the sentence file name: ").strip()
 
-#Her bir seçeneğin birer liste olarak dictionary'e eklenmesi gerekiyordu.
-#Detaylarını anlatıcam...
+#Cümle dosyası açılır ve cümleler alınır
+sentences = functions.get_sentences(sentence_file)
+
+print(functions.tokenizate(sentences=sentences, is_word_based=is_word_based))
+
+
+#Kelime bazlı mı yoksa karakter bazlı mı olduğunu kontrol edilir
+tokenizated_sentence=functions.tokenizate(sentences=sentences, is_word_based=is_word_based)
+index=[0]
+is_correct_sentence=[False]
+parse_counter=[1]
+print(functions.parse_word_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammer_dict, start_symbol=start_symbol,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence))
