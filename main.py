@@ -21,4 +21,6 @@ print(functions.tokenizate(sentences=sentences, is_word_based=is_word_based))
 #Kelime bazlı mı yoksa karakter bazlı mı olduğunu kontrol edilir
 tokenizated_sentence=functions.tokenizate(sentences=sentences, is_word_based=is_word_based)
 index=[0]
-print(functions.parse(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammer_dict, start_symbol=start_symbol,index=index))
+is_correct_sentence=[False]
+parse_counter=[1]
+print(functions.parse_word_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammer_dict, start_symbol=start_symbol,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence))
