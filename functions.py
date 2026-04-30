@@ -66,7 +66,7 @@ def tokenizate(*,sentences, is_word_based):
                 tokenizated_sentences.append(item)
     return tokenizated_sentences
 
-def parse_word_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_counter=None,is_correct_sentence=None):
+def parse_word_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_counter=None,is_correct_sentence=None,list_for_json=None):
     
     if start_symbol not in grammar_dict:
         print(f"Error: {start_symbol} is not a non-terminal symbol in the grammar.")
@@ -76,14 +76,20 @@ def parse_word_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=No
         is_correct_word_found = False
         terminal_counter = 0
         for value in grammar_dict[start_symbol]:
+            write_json = True ###
             for item in value:
+
                 if item in grammar_dict:
                     
                     if parse_counter[0] == 0:
                         break
 
                     parse_counter[0] += 1
-                    parse_word_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence)
+                    
+                    if write_json:
+                        list_for_json.append( [start_symbol, value])
+                        write_json = False
+                    parse_word_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence,list_for_json=list_for_json)
                     if parse_counter[0] != 0:
                         parse_counter[0] -= 1
 
@@ -92,6 +98,7 @@ def parse_word_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=No
 
                     if item == tokenizated_sentence[0][index[0]]:
                         index[0] +=1
+                        list_for_json.append( [start_symbol, item])
                         is_correct_word_found = True
                         exit_loops=True
 
@@ -110,11 +117,15 @@ def parse_word_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=No
                                 return False
                             else:
                                 index[0] -=1 #terminal eşleşmediği için index geri alınır ve diğer alternatifler denenir.
+                                list_for_json.pop() #Eğer value içindeki terminallerden hiçbiri eşleşmediyse list_for_json dan da son eklenen item silinir.
+                                #Burda sadece value değeri silindiği için 1 tane pop var.Terminal de yazdırılmış olsaydı 2 pop atacaktık(ki onu başka if bloğunda yapıyoruz). 
 
                 #if item == value[-1] and value == grammar_dict[start_symbol] and item not in grammar_dict and index[0] != len(tokenizated_sentence[0])-1:
                 #   index[0] -=1 #Eğer value terminaller arasındaki son elemansa ve cümledeki kelime sayısı ile index eşit değilse demekki bu value ile cümle oluşturulamaz ve index geri alınır.
                 if value != grammar_dict[start_symbol][-1] and item in grammar_dict and index[0] != len(tokenizated_sentence[0])-1 and not is_correct_sentence[0]:
                     index[0] -=1
+                    list_for_json.pop() 
+                    list_for_json.pop() #Eğer value içindeki item non-terminal ise ve value içindeki son item değilse ve cümledeki kelime sayısı ile index eşit değilse demekki bu value ile cümle oluşturulamaz ve index geri alınır. Aynı zamanda list_for_json dan da son eklenen item silinir.
                 
             if exit_loops:
                 break
