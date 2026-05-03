@@ -4,3 +4,4 @@
 <determiner> ::= the | a
 <noun> ::= cat | dog | man | telescope
 <verb> ::= saw | liked | admired
+<verb2> ::= saw | liked

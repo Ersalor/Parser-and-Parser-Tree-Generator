@@ -1,3 +1,5 @@
+import json
+
 def grammar_to_dict(grammar_file):
 
     with open(grammar_file, 'r', encoding='utf-8') as file:
@@ -66,7 +68,24 @@ def tokenizate(*,sentences, is_word_based):
                 tokenizated_sentences.append(item)
     return tokenizated_sentences
 
-def parse_word_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_counter=None,is_correct_sentence=None):
+def parse_to_json(sentence, grammar_dict, start_symbol):
+    tokens = sentence.split()
+    index = [0]
+    
+    tree = parse_word_based(
+        tokenizated_sentence=[tokens],
+        grammar_dict=grammar_dict,
+        start_symbol=start_symbol,
+        index=index,
+        parse_counter=[1],
+        is_correct_sentence=[False]
+    )
+    
+    # tree artık dict → JSON'a çevir
+    result = {start_symbol: tree}
+    return json.dumps(result, indent=2, ensure_ascii=False)
+
+def parse_word_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_counter=None,is_correct_sentence=None,list_for_json=None):
     
     if start_symbol not in grammar_dict:
         print(f"Error: {start_symbol} is not a non-terminal symbol in the grammar.")
