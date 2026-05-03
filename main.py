@@ -24,8 +24,10 @@ index=[0]
 is_correct_sentence=[False]
 parse_counter=[1]
 list_for_json=[]
+last_value=[]
+condition = [False]
 
-print(functions.parse_word_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammer_dict, start_symbol=start_symbol,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence,list_for_json=list_for_json))
+print(functions.parse_word_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammer_dict, start_symbol=start_symbol,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence,list_for_json=list_for_json,last_value=last_value,condition=condition))
 print(list_for_json)
 
 #Verb2 problemi çözülmedi
