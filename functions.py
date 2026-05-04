@@ -62,8 +62,12 @@ def tokenizate(*,sentences, is_word_based):
         if is_word_based:
             tokenizated_sentences.append(sentence.split())
         else:
-            for item in list(sentence):
-                tokenizated_sentences.append(item)
+            tokenizated_sentences.append(list(sentence))
+            tokenizated_sentences[0].append(" ")
+    
+    if len(sentences) == 0:
+        tokenizated_sentences.append(" ")
+            
     return tokenizated_sentences
 
 def parse_word_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_counter=None,is_correct_sentence=None,list_for_json=None,last_value=None,condition=None):
@@ -159,7 +163,7 @@ def parse_word_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=No
      #cümleyi başarıyla oluşturabilmişiz demektir.
 
 
-def parse_letter_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_counter=None,is_correct_sentence=None):
+def parse_letter_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_counter=None,is_correct_sentence=None,list_for_json=None):
     
 
     if start_symbol not in grammar_dict:
@@ -171,10 +175,15 @@ def parse_letter_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=
         is_correct_word_found = False
         terminal_counter = 0
         for value in grammar_dict[start_symbol]:
+            ##############################################################################
+            write_json = True ###
+            ##############################################################################
             for item in value:
                 if item == "ε":
                     if item == value[-1] and index[0] != len(tokenizated_sentence[0])-1 : #Epsilon son elemansa 
-                        pass_value = True                                                  # aa lardan bb lere geçerken pass etmemizi sağlıyor
+                        pass_value = True
+                        if list_for_json[-1] != [start_symbol, item]: 
+                            list_for_json.append([start_symbol, item])                                                 # aa lardan bb lere geçerken pass etmemizi sağlıyor
                         break                                                              # eğer cümlenin sonuncu kelimesi değilse çalıştırır
                                                                                            # Son elemansa aşağıda zaten kontrol ediyoruz...
                     # else:         #Ortadaki epsilonlar için dictionary ye çevirirken sona atma yapılabilir. 
@@ -182,9 +191,14 @@ def parse_letter_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=
 
                 if item in grammar_dict:
                     parse_counter[0] += 1
-                    parse_letter_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence)
+                    ##############################################################################
+                    if write_json:
+                        list_for_json.append( [start_symbol, value])
+                        write_json = False
+                    ##############################################################################
+                    parse_letter_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence,list_for_json=list_for_json)
                     parse_counter[0] -= 1
-                    if parse_letter_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence) == 0 and parse_counter[0] != 1: #Eğer item "ε" ise ve value içindeki son item değilse diğer alternatifler denenir.
+                    if parse_letter_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence,list_for_json=list_for_json) == 0 and parse_counter[0] != 1: #Eğer item "ε" ise ve value içindeki son item değilse diğer alternatifler denenir.
                         return 0
                         
                 else:
@@ -195,6 +209,8 @@ def parse_letter_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=
                             pass_value = True
                             # print("Correct sentence")
                             is_correct_sentence[0] = True
+                            if list_for_json[-1] != [start_symbol, item]: 
+                                list_for_json.append([start_symbol, item])
                             break
                     #son karakter problemi çözülecek
 

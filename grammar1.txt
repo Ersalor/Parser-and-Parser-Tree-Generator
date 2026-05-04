@@ -1,7 +1,6 @@
 <sentence> ::= <noun-phrase> <verb-phrase>
 <noun-phrase> ::= <determiner> <noun>
-<verb-phrase> ::= <verb2> | <verb> <noun-phrase>
+<verb-phrase> ::= <verb> | <verb> <noun-phrase>
 <determiner> ::= the | a
 <noun> ::= cat | dog | man | telescope
 <verb> ::= saw | liked | admired
-<verb2> ::= saw | liked
