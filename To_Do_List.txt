@@ -1,0 +1,11 @@
+1-Cümlenin yanlış olması durumunda hata mesajı vermesi için hata fırlatacak fonksiyonu oluştur.
+
+2-Kullanıcıdan grammar ve sentences dosyalarının alınması işleminde try-catch ekle.(mümkünse bu dosyaların alınması için fonksiyon oluştur)
+
+3-Kullanıcıın vereceği sentences dosyası birden çok cümle içerecek.Bu cümleleri sırayla işleme alacak bir yapı kur.
+
+4-Kelime tabanlı ve harf tabanlı grammarler için bütün işlemleri (parse,json formatında görüntüleme,
+parse tree çizme ve varsa hata fırlatma) sırasıyla gerçekleştiren son fonksiyonları oluştur.
+
+5-Vakit kalırsa harf tabanlı grammarler için kendin oluşturduğun fonksiyonu düzelt ve onu kullan.
+
