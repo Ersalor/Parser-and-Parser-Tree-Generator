@@ -1,3 +1,0 @@
-S ::= K L
-K ::= c K d | ε
-L ::= e L f | e f

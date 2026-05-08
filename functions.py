@@ -27,7 +27,7 @@ def grammar_to_dict(grammar_file):
     # #Grammer dosyasından üretilen dictionary yazdırılır
     # print("Grammar Dictionary: \n")
     # for key, value in grammar.items():
-    #     print(f"{key} ::= {value}")
+    #     print(f"{key} : {value}")
 
     return grammar
 
