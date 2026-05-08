@@ -258,29 +258,29 @@ def parse_letter_based(*,tokenizated_sentence, grammar_dict, start_symbol,index=
 
 def parse_letter_based_v2(*, tokens, grammar, symbol, pos, list_for_json):
     if symbol not in grammar:
-        # Terminal - sadece değeri döndür, listeye ekleme (parent ekliyor)
         if symbol == 'ε':
             return pos
         if pos < len(tokens) and tokens[pos] == symbol:
             return pos + 1
         return None
 
+    best_temp = []
+    best_pos = pos  # kaç token tüketildi
+
     for production in grammar[symbol]:
         current_pos = pos
         success = True
         temp_json = []
 
-        # Eğer production tek elemanlı terminal ise: ['<determiner>', 'a'] formatında ekle
-        # Eğer non-terminal içeriyorsa: ['<noun-phrase>', ['<determiner>', '<noun>']] formatında ekle
         all_terminals = all(item not in grammar and item != 'ε' for item in production)
-        
+
         if all_terminals and len(production) == 1:
-            # Terminal production: ['<verb>', 'admired'] gibi
             item = production[0]
             if pos < len(tokens) and tokens[pos] == item:
                 list_for_json.append([symbol, item])
                 return pos + 1
-            return None
+            continue
+
         else:
             temp_json.append([symbol, production])
 
@@ -302,7 +302,13 @@ def parse_letter_based_v2(*, tokens, grammar, symbol, pos, list_for_json):
         if success:
             list_for_json.extend(temp_json)
             return current_pos
+        else:
+            # ⚠️ sadece daha fazla token tüketen production'ı sakla
+            if current_pos > best_pos:
+                best_temp = temp_json
+                best_pos = current_pos
 
+    list_for_json.extend(best_temp)
     return None
 
 ##########################################################################################################
@@ -407,7 +413,7 @@ def generate_json_from_list_letter(list_for_json):
 
 #Parse Tree Yazdırma Fonksiyonu
 #-Elde ettiğimiz JSON formatının dictionary formunu girdi olarak alır
-# tree_dict=json.loads(json_string) 
+# tree_dict=json.loads(json) 
 def print_parse_tree(tree_dict, indent=""):
     # Sözlükteki elemanları (dalları) sırayla geziyoruz
     items = list(tree_dict.items())

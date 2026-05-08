@@ -1,3 +1,4 @@
-S ::= A B
-A ::= a A | ε
-B ::= b B | ε
+S ::= A B C
+A ::= a A | a
+B ::= b B | b b
+C ::= c | c c
