@@ -15,28 +15,39 @@ os.environ["PATH"] += os.pathsep + r"C:\Program Files\Graphviz\bin"
 
 def grammar_to_dict(grammar_file):
 
-    with open(grammar_file, 'r', encoding='utf-8') as file:
-        lines=file.readlines()
+    try:
+        with open(grammar_file, 'r', encoding='utf-8') as file:
+            lines=file.readlines()
 
-#Grammer dosyasından dictionary oluşturulur
+    except FileNotFoundError:
+        print(f"Error: File '{grammar_file}' not found.")
+        return {}
+    except IOError as e:
+        print(f"Error: Failed to read file: {e}")
+        return {}
+    #Grammer dosyasından dictionary oluşturulur
     grammar = {}
     for line in lines:
-        line = line.strip()
-        if not line:
-            continue   
-        left, right = line.split('::=')
-        left = left.strip()
-        right = right.strip()
-        right_parts = [part.strip() for part in right.split('|')]
-        for part in right_parts:
-            right_parts[right_parts.index(part)] = part.split(" ")
-        
-        if ["ε"] in right_parts:
-            right_parts.remove(["ε"])
-            right_parts.append(["ε"])
+        try:
+            line = line.strip()
+            if not line:
+                continue   
+            left, right = line.split('::=')
+            left = left.strip()
+            right = right.strip()
+            right_parts = [part.strip() for part in right.split('|')]
+            for part in right_parts:
+                right_parts[right_parts.index(part)] = part.split(" ")
+            
+            if ["ε"] in right_parts:
+                right_parts.remove(["ε"])
+                right_parts.append(["ε"])
 
-        grammar[left] = right_parts
-
+            grammar[left] = right_parts
+       
+        except Exception as e:
+            print(f"Error: Unexpected error on line '{line}': {e}")
+            continue
     # #Grammer dosyasından üretilen dictionary yazdırılır
     # print("Grammar Dictionary: \n")
     # for key, value in grammar.items():
@@ -71,9 +82,16 @@ def is_word_based(grammar_dict):
 ##########################################################################################################
 
 def get_sentences(sentence_file):
-    with open(sentence_file, 'r', encoding='utf-8') as file:
-        sentences = [sentence.strip() for sentence in file.readlines()]
-    return sentences
+    try:
+        with open(sentence_file, 'r', encoding='utf-8') as file:
+            sentences = [sentence.strip() for sentence in file.readlines()]
+        return sentences
+    except FileNotFoundError:
+        print(f"Error: File '{sentence_file}' not found.")
+        return []
+    except IOError as e:
+        print(f"Error: Failed to read file: {e}")
+        return []
 
 ##########################################################################################################
 
@@ -93,7 +111,7 @@ def tokenizate(*,sentence, is_word_based):
 
 ##########################################################################################################
 
-def parse_word_based(tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_counter=None,is_correct_sentence=None,list_for_json=None,last_value=None,condition=None):
+def parse_word_based(tokenizated_sentence, grammar_dict, start_symbol,index=None,parse_counter=None,is_correct_sentence=None,list_for_json=None,last_value=None,condition=None,temp_index=None):
     
     if start_symbol not in grammar_dict:
         #print(f"Error: {start_symbol} is not a non-terminal symbol in the grammar.")
@@ -117,11 +135,18 @@ def parse_word_based(tokenizated_sentence, grammar_dict, start_symbol,index=None
                         list_for_json.append( [start_symbol, value])
                         write_json = False
                     last_value.append(grammar_dict[start_symbol]) 
-                    parse_word_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence,list_for_json=list_for_json,last_value=last_value,condition=condition)
+                    temp_index[0] = index[0]
+                    parse_word_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=item,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence,list_for_json=list_for_json,last_value=last_value,condition=condition,temp_index=temp_index)
                     if last_value: 
                         last_value.pop()
                     if parse_counter[0] != 0:
                         parse_counter[0] -= 1
+                    
+                    if index[0] == 0 and value == grammar_dict[start_symbol][0] and parse_counter[0] == 1:
+                        return False
+                    if temp_index[0] == index[0] and len(value) > 1:
+                        pass_value = True
+                        break
 
                 else:
                     terminal_counter +=1
@@ -266,6 +291,21 @@ def parse_letter_based_broken(tokenizated_sentence, grammar_dict, start_symbol,i
                 break
 
     return is_correct_sentence[0]
+
+#================================================================================================
+"""
+#               Broken Letter Based parsing function and its extra parameters
+
+tokenizated_sentence=functions.tokenizate(sentences=sentences, is_word_based=is_word_based)
+index=[0]
+is_correct_sentence=[False]
+parse_counter=[1]
+list_for_json=[]
+
+print(functions.parse_letter_based(tokenizated_sentence=tokenizated_sentence, grammar_dict=grammar_dict, start_symbol=start_symbol,index=index,parse_counter=parse_counter,is_correct_sentence=is_correct_sentence,list_for_json=list_for_json))
+print(list_for_json)
+
+"""
 
 ##########################################################################################################
 
@@ -467,7 +507,7 @@ def find_correct_part(list_for_json, keys):
 
 ##########################################################################################################
 
-def find_where_occurs(correct_part_list, tokenized_sentence,is_word_based=True):
+def find_where_occurs(correct_part_list, tokenized_sentence,is_word_based):
     if is_word_based:
         error_token = tokenized_sentence[0][len(correct_part_list)]
         print(f"Where the error occurs: at token {len(correct_part_list)+1} (\"{error_token}\") ")
@@ -481,9 +521,10 @@ def find_where_occurs(correct_part_list, tokenized_sentence,is_word_based=True):
 def find_expected_values_word_based(list_for_json, grammar_dict):
     expected_values = []
     correct_part_list = find_correct_part(list_for_json, set(grammar_dict.keys()))
-    last_correct_token = correct_part_list[-1]
+    #last_correct_token = correct_part_list[-1]
     
     if len(correct_part_list) > 0:
+        last_correct_token = correct_part_list[-1]
         current_key = None
         current_index = None
 
@@ -495,7 +536,7 @@ def find_expected_values_word_based(list_for_json, grammar_dict):
                     current_key = item[0]
                     break
         if current_key is None:
-            return "No expected values found.Current key is unknown."
+            print("No expected values found.Current key is unknown.")
     
         current_index = list_for_json.index([current_key,last_correct_token])
     
@@ -522,9 +563,9 @@ def find_expected_values_word_based(list_for_json, grammar_dict):
 
         if len(expected_values) > 1:
             result = " or ".join(f'"{v}"' for v in expected_values)
-            return f"What was expected: a {expected_key.strip('<>')} ({result}) " + end_of_error_message
+            print(f"What was expected: a {expected_key.strip('<>')} ({result}) " + end_of_error_message)
         else:
-            return f"What was expected: a {expected_key.strip('<>')} (\"{expected_values[0]}\") " + end_of_error_message
+            print(f"What was expected: a {expected_key.strip('<>')} (\"{expected_values[0]}\") " + end_of_error_message)
 
 ##########################################################################################################
 
@@ -543,11 +584,11 @@ def find_expected_values_letter_based(list_for_json, grammar_dict):
     def format_result(key, values, end_msg):
         if len(values) > 1:
             result = ' or '.join(f'"{v}"' for v in values)
-            return f"What was expected: a {key} ({result}) {end_msg}"
+            print(f"What was expected: a {key} ({result}) {end_msg}")
         elif len(values) == 1:
-            return f"What was expected: a {key} (\"{values[0]}\") {end_msg}"
+            print(f"What was expected: a {key} (\"{values[0]}\") {end_msg}")
         else:
-            return "No expected values found."
+            print("No expected values found.")
 
     if not list_for_json:
         first_key = next(iter(grammar_dict))
@@ -575,9 +616,10 @@ def find_expected_values_letter_based(list_for_json, grammar_dict):
 
 def why_is_invalid(list_for_json, grammar_dict,tokenizated_sentence):
     correct_part_list = find_correct_part(list_for_json, set(grammar_dict.keys()))
-    last_correct_token = correct_part_list[-1]
+    #last_correct_token = correct_part_list[-1]
 
     if len(correct_part_list) > 0:
+        last_correct_token = correct_part_list[-1]
         current_key = None
         current_index = None
 
@@ -589,7 +631,7 @@ def why_is_invalid(list_for_json, grammar_dict,tokenizated_sentence):
                     current_key = item[0]
                     break
         if current_key is None:
-            return "No expected values found.Current key is unknown."
+            print("No expected values found.Current key is unknown.")
     
         current_index = list_for_json.index([current_key,last_correct_token])
     
@@ -626,9 +668,9 @@ def why_is_invalid(list_for_json, grammar_dict,tokenizated_sentence):
                     break
         
         if is_in_dict:
-            return error_message + (f"but \"{error_token}\" is a {word_type}.")
+            print(error_message + (f"but \"{error_token}\" is a {word_type}."))
         else:
-            return error_message + (f"but \"{error_token}\" is not in {expected_key.strip('<>') } in the grammar.")
+            print(error_message + (f"but \"{error_token}\" is not in {expected_key.strip('<>') } in the grammar."))
 
 ##########################################################################################################
 
@@ -770,7 +812,7 @@ def execute_parsing_and_visualization(grammar_file, sentence_file):
     grammar_dict=grammar_to_dict(grammar_file)
 
     #Kelime bazlı mı yoksa karakter bazlı mı olduğu kontrol edilir
-    is_word_based = is_word_based(grammar_dict)
+    is_grammar_word_based = is_word_based(grammar_dict)
 
     #Başlangıc sembolü belirlenir
     start_symbol = list(grammar_dict.keys())[0]
@@ -779,13 +821,13 @@ def execute_parsing_and_visualization(grammar_file, sentence_file):
     sentences = get_sentences(sentence_file)
 
 
-    if is_word_based:
+    if is_grammar_word_based:
         
         list_to_show_trees = []
         for sentence in sentences:
 
             #Cümleler tokenizate edilir, kelime bazlı ise kelimelere, karakter bazlı ise karakterlere ayrılır
-            tokenizated_sentence=tokenizate(sentence=sentence, is_word_based=is_word_based)
+            tokenizated_sentence=tokenizate(sentence=sentence, is_word_based=is_grammar_word_based)
 
             index=[0]
             is_correct_sentence=[False]
@@ -793,16 +835,15 @@ def execute_parsing_and_visualization(grammar_file, sentence_file):
             list_for_json=[]
             last_value=[]
             condition = [False]
+            temp_index = [0]
 
-            result =parse_word_based(tokenizated_sentence, grammar_dict, start_symbol,index,parse_counter,is_correct_sentence,list_for_json,last_value,condition)
+            result =parse_word_based(tokenizated_sentence, grammar_dict, start_symbol,index,parse_counter,is_correct_sentence,list_for_json,last_value,condition,temp_index)
 
             print("Sentence:", sentence)
             if result:
-                
-            
                 print("Valid sentence\n")
                 json_format = generate_json_from_list_word(list_for_json)
-                list_to_show_trees.append({"title": sentence, "json": json_format})
+                list_to_show_trees.append({"title": sentence, "json": json.loads(json_format)})
 
                 print("JSON:\n", json_format)
 
@@ -814,18 +855,20 @@ def execute_parsing_and_visualization(grammar_file, sentence_file):
 
                 keys = set(grammar_dict.keys())
                 correct_part_list = find_correct_part(list_for_json, keys)
-                find_where_occurs(correct_part_list, tokenizated_sentence,is_word_based)
+                find_where_occurs(correct_part_list, tokenizated_sentence,is_grammar_word_based)
                 find_expected_values_word_based(list_for_json, grammar_dict)
                 why_is_invalid(list_for_json, grammar_dict, tokenizated_sentence)
-            
+                print()
+        
         #Parse Tree Görselleştirme
-        show_trees(list_to_show_trees) 
+        if len(list_to_show_trees) > 0:
+            show_trees(list_to_show_trees) 
         
     else:
         list_to_show_trees = []
         for sentence in sentences:
 
-            tokenizated_sentence=tokenizate(sentence=sentence, is_word_based=is_word_based)
+            tokenizated_sentence=tokenizate(sentence=sentence, is_word_based=is_grammar_word_based)
 
             tokens = [t for t in tokenizated_sentence[0] if t.strip()]
             list_for_json = []
@@ -836,7 +879,7 @@ def execute_parsing_and_visualization(grammar_file, sentence_file):
             if is_correct:
                 print("Valid sentence\n")
                 json_format = generate_json_from_list_letter(list_for_json)
-                list_to_show_trees.append({"title": sentence, "json": json_format})
+                list_to_show_trees.append({"title": sentence, "json": json.loads(json_format)})
 
                 print("JSON:\n", json_format)
 
@@ -846,15 +889,12 @@ def execute_parsing_and_visualization(grammar_file, sentence_file):
 
                 keys = set(grammar_dict.keys())
                 correct_part_list = find_correct_part(list_for_json, keys)
-                find_where_occurs(correct_part_list, tokenizated_sentence,is_word_based)
+                find_where_occurs(correct_part_list, tokenizated_sentence,is_grammar_word_based)
                 find_expected_values_letter_based(list_for_json, grammar_dict)
+                print()
 
         #Parse Tree Görselleştirme
-        show_trees(list_to_show_trees)  
+        if len(list_to_show_trees) > 0:
+            show_trees(list_to_show_trees)  
 
-
-
-
-                
-
-
+     
