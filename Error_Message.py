@@ -27,7 +27,7 @@ word_list = [['<sentence>', ['<noun-phrase>', '<verb-phrase>']], ['<noun-phrase>
 
 #################################################################################################
 
-keys = set(word_dict.keys())
+keys = set(letter_dict.keys())
 
 def find_correct_part(data, keys):
     correct_part_list = []
@@ -39,7 +39,7 @@ def find_correct_part(data, keys):
                 correct_part_list.append(v)
     return correct_part_list
 
-print(find_correct_part(word_list, keys))
+print(find_correct_part(letter_list, keys))
 #print(find_correct_part(letter_list, set(letter_dict.keys())))
 
 
@@ -53,12 +53,12 @@ def find_where_occurs(correct_part_list, sentence,is_word_based=True):
         error_token = sentence[0][len(correct_part_list)-epsilon_counter]
         print(f"Where the error occurs: at token {len(correct_part_list)+1 - epsilon_counter} (\"{error_token}\") ")
 
-find_where_occurs(find_correct_part(word_list, set(word_dict.keys())), word_sentence, is_word_based=True)
+# find_where_occurs(find_correct_part(word_list, set(word_dict.keys())), word_sentence, is_word_based=True)
 #find_where_occurs(find_correct_part(letter_list, set(letter_dict.keys())), letter_sentence, is_word_based=False)
 
 
 ##   ⚠️⚠️⚠️Letter Based için find_expected_values fonksiyonunu ayarla...⚠️⚠️⚠️
-def find_expected_values(list_for_json, grammar_dict):
+def find_expected_values_word_based(list_for_json, grammar_dict):
     expected_values = []
     correct_part_list = find_correct_part(list_for_json, set(grammar_dict.keys()))
     last_correct_token = correct_part_list[-1]
@@ -106,12 +106,54 @@ def find_expected_values(list_for_json, grammar_dict):
         else:
             return f"What was expected: a {expected_key.strip('<>')} (\"{expected_values[0]}\") " + end_of_error_message
     
+def find_expected_values_letter_based(list_for_json, grammar_dict):
 
-print(find_expected_values(word_list, word_dict)) 
-#print(find_expected_values(letter_list, letter_dict)) # word_list & letter_listaslında list_for_json listesidir...
+    def get_terminals(key):
+        values = []
+        for production in grammar_dict[key]:
+            first = production[0]
+            if first != 'ε' and first not in grammar_dict:
+                values.append(first)
+            elif first in grammar_dict:
+                values.extend(get_terminals(first))
+        return list(dict.fromkeys(values))
+
+    def format_result(key, values, end_msg):
+        if len(values) > 1:
+            result = ' or '.join(f'"{v}"' for v in values)
+            return f"What was expected: a {key} ({result}) {end_msg}"
+        elif len(values) == 1:
+            return f"What was expected: a {key} (\"{values[0]}\") {end_msg}"
+        else:
+            return "No expected values found."
+
+    if not list_for_json:
+        first_key = next(iter(grammar_dict))
+        return format_result(first_key, get_terminals(first_key), "to start")
+
+    last_item = list_for_json[-1]
+    current_key = last_item[0]
+    rhs = last_item[1]
+
+    if rhs == ['ε'] or rhs == 'ε':
+        expected_values = get_terminals(current_key)
+    elif isinstance(rhs, list):
+        first_element = rhs[0]
+        if first_element in grammar_dict:
+            current_key = first_element
+            expected_values = get_terminals(first_element)
+        else:
+            expected_values = [first_element]
+    else:
+        expected_values = get_terminals(current_key)
+
+    return format_result(current_key, expected_values, "to continue")
+
+#print(find_expected_values_letter_based(letter_list, letter_dict)) 
+#print(find_expected_values_letter_based(letter_list, letter_dict)) # word_list & letter_listaslında list_for_json listesidir...
 
 
-def why_is_invalid(list_for_json, grammar_dict,sentence):
+def why_is_invalid(list_for_json, grammar_dict,tokenizated_sentence):
     correct_part_list = find_correct_part(list_for_json, set(grammar_dict.keys()))
     last_correct_token = correct_part_list[-1]
 
@@ -152,7 +194,7 @@ def why_is_invalid(list_for_json, grammar_dict,sentence):
 
         error_message=(f"Why the sentence is invalid: the sentence should {begin_continue} with a {expected_key.strip('<>')}, ")
 
-        error_token = sentence[0][len(correct_part_list)]
+        error_token = tokenizated_sentence[0][len(correct_part_list)]
 
         is_in_dict= False
         word_type = None
@@ -169,5 +211,5 @@ def why_is_invalid(list_for_json, grammar_dict,sentence):
             return error_message + (f"but \"{error_token}\" is not in {expected_key.strip('<>') } in the grammar.")    
         
 
-print(why_is_invalid(word_list, word_dict, word_sentence))
+#print(why_is_invalid(word_list, word_dict, word_sentence))
 
